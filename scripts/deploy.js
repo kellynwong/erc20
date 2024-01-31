@@ -4,25 +4,20 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
+const hre = require("hardhat"); // hardhat runtime environment
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  let ourToken;
+  let initialSupply = "1000" + "0".repeat(18); // "50" + "0".repeat(18) is a way to represent 50 * 10**18 in JavaScript, creating a string with 50 followed by 18 zeros. This represents 50 units of your token, considering 18 decimal places. This way, when you input this value into your contract, it understands it as 50 whole tokens, not 50 wei (the smallest unit in Ethereum, analogous to cents in dollars or pence in pounds).
 
-  const lockedAmount = hre.ethers.parseEther("0.001");
+  // Setup accounts
+  [deployer] = await ethers.getSigners();
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  // Deploy contract
+  const OurToken = await ethers.getContractFactory("OurToken");
+  ourToken = await OurToken.deploy(initialSupply);
+  console.log(`Deployed OurToken contract at: ${ourToken.target}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
